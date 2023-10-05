@@ -1,7 +1,9 @@
 import { App } from "./app.js";
 import { connectDB } from "./database.js";
+import './config.js'
 
-App.listen(3000, () => {
+const port = process.env.PORT
+App.listen(port, () => {
   connectDB();
   console.log("Server listen on the port 3000");
 });

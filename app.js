@@ -12,7 +12,7 @@ export const App = express();
 
 dotenv.config();
 App.use(cors({
-    origin: 'http://localhost:5173', credentials: true
+    origin: process.env.CLIENT_PORT, credentials: true
 }))
 App.use(express.json());
 App.use(cookieParser())
