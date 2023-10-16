@@ -105,8 +105,7 @@ export const login = async (req, res) => {
 
 
 export const logout = (req, res) => {
-  res.set('Set-Cookie', 'token=; Max-Age=0; path=/');
-  return res.sendStatus(200);
+  return res.set('Set-Cookie', 'token=; Max-Age=0; path=/');
 };
 
 export const verifyToken = async (req, res) => {
