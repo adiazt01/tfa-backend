@@ -2,79 +2,111 @@ import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+/* 
+El controlador de "register" maneja el registro de usuarios,
+este espera el email, username y password, los dos primeros 
+valores deben de ser unicos
+*/
 export const register = async (req, res) => {
   const { email, username, password } = req.body;
 
-  const foundUser = await User.findOne({ email });
-  if (foundUser)
-    return res.status(409).json({ error: ["Email has already using"] });
+  // Manejador de errores
+  const handleError = (res) => {
+    return res
+      .status(408)
+      .json({ error: ["Error inesperado, intentelo de nuevo"] });
+  };
 
-  const salt = await bcryptjs.genSalt(10);
-  const hashedPassword = await bcryptjs.hash(password, salt);
+  try {
+    // Verificando que el email es unico
+    const foundUserEmail = await User.findOne({ email });
+    if (foundUserEmail)
+      return res.status(409).json({ error: ["Email has already using"] });
 
-  const newUser = new User({
-    email,
-    password: hashedPassword,
-    username,
-  });
+    // Verificando que el usuario es unico
+    const foundUserUsername = await User.findOne({ username });
+    if (foundUserUsername)
+      return res.status(409).json({ error: ["Username has already using"] });
 
-  const token = jwt.sign({ _id: newUser._id }, process.env.TOKEN_SECRET, {
-    expiresIn: "1d",
-  });
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(password, salt);
+    const newUser = new User({
+      email,
+      password: hashedPassword,
+      username,
+    });
 
-  await newUser.save();
+    const token = jwt.sign({ _id: newUser._id }, process.env.TOKEN_SECRET, {
+      expiresIn: "1d",
+    });
 
-  res.cookie("token", token, {
-    sameSite: "none",
-    secure: true,
-    httpOnly: false,
-  });
+    res.cookie("token", token, {
+      sameSite: "none",
+      secure: true,
+      httpOnly: false,
+    });
 
-  res.json({
-    email: newUser.email,
-    username: newUser.username,
-    project: newUser.project,
-    token,
-  });
+    await newUser.save();
+
+    res.json({
+      email: newUser.email,
+      username: newUser.username,
+      project: newUser.project,
+      token,
+    });
+  } catch (error) {
+    handleError(res);
+  }
 };
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  /* Falta try catch */
-  const foundUser = await User.findOne({ email });
+  // Manejador de errores
+  const handleError = (res) => {
+    return res
+      .status(408)
+      .json({ error: ["Error inesperado, intentelo de nuevo"] });
+  };
 
-  if (!foundUser)
-    return res.status(409).json({ error: ["Email or password incorrect"] });
+  try {
+    // Se busca el usuario
+    const foundUser = await User.findOne({ email });
+    if (!foundUser)
+      return res.status(409).json({ error: ["Email or password incorrect"] });
 
-  const isMatch = await bcryptjs.compare(password, foundUser.password);
+    // Se compara las contraseñas
+    const isMatch = await bcryptjs.compare(password, foundUser.password);
+    if (!isMatch)
+      return res.status(409).json({ error: ["Email or password incorrect"] });
 
-  if (!isMatch)
-    return res.status(409).json({ error: ["Email or password incorrect"] });
+    // Se crea el token de autorizacion
+    const token = jwt.sign({ _id: foundUser._id }, process.env.TOKEN_SECRET, {
+      expiresIn: "1d",
+    });
 
-  const token = jwt.sign({ _id: foundUser._id }, process.env.TOKEN_SECRET, {
-    expiresIn: "1d",
-  });
+    // Se envia al cliente
+    res.cookie("token", token, {
+      sameSite: "none",
+      secure: true,
+      httpOnly: false,
+    });
 
-  res.cookie("token", token, {
-    sameSite: "none",
-    secure: true,
-    httpOnly: false,
-  });
-
-  res.json({
-    email: foundUser.email,
-    username: foundUser.username,
-    project: foundUser.project,
-    token,
-  });
+    res.json({
+      email: foundUser.email,
+      username: foundUser.username,
+      project: foundUser.project,
+      token,
+    });
+  } catch (error) {
+    handleError(res);
+  }
 };
 
 export const logout = (req, res) => {
   res.cookie("token", "", {
     expires: new Date(0),
   });
-
   return res.sendStatus(200);
 };
 
