@@ -103,10 +103,9 @@ export const login = async (req, res) => {
   }
 };
 
+
 export const logout = (req, res) => {
-  res.cookie("token", "", {
-    expires: new Date(0),
-  });
+  res.set('Set-Cookie', 'token=; Max-Age=0; path=/');
   return res.sendStatus(200);
 };
 

@@ -14,8 +14,9 @@ export const getProjects = async (req, res) => {
 };
 
 export const getProject = async (req, res) => {
-  const { user } = req;
+  const { user } = req.body;
   const { id_project } = req.params;
+  console.log(user);
   try {
     const projectsFound = await Project.findOne({
       user: user._id,
