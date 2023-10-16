@@ -105,7 +105,10 @@ export const login = async (req, res) => {
 
 
 export const logout = (req, res) => {
-  return res.set('Set-Cookie', 'token=; Max-Age=0; path=/');
+  res.clearCookie('token', { 
+    sameSite: 'none', 
+    secure: true 
+  }); 
 };
 
 export const verifyToken = async (req, res) => {
