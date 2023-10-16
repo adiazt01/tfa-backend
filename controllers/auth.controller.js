@@ -103,12 +103,8 @@ export const login = async (req, res) => {
   }
 };
 
-
 export const logout = (req, res) => {
-  return res.clearCookie('token', { 
-    sameSite: 'none', 
-    secure: true 
-  }); 
+  res.cookie("token", "", { expires: new Date(1), path: "/" });
 };
 
 export const verifyToken = async (req, res) => {
