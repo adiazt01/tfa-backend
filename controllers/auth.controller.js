@@ -109,13 +109,13 @@ export const logout = (req, res) => {
     secure: true,
     httpOnly: false,
   });
-  
+
   return res.sendStatus(200);
 };
 
 export const verifyToken = async (req, res) => {
   const { token } = req.cookies;
-  if (!token) return res.sendStatus(401).json({ error: ["Unauthorized"] });
+  if (!token) return res.status(401).json({ error: ["Unauthorized"] });
 
   jwt.verify(token, process.env.TOKEN_SECRET, async (err, user) => {
     if (err) return res.status(401).json({ error: ["Unauthorized"] });

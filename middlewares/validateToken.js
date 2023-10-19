@@ -15,11 +15,16 @@ export const authRequired = async (req, res, next) => {
       message: "No token, authorization denied",
     });
 
-   jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
-    console.log(decoded);
-    req.user = decoded;
-  });
+  try {
+    req.user = await new Promise((resolve, reject) => {
+      jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
+        if (err) reject(err);
+        resolve(decoded);
+      });
+    });
+  } catch (err) {
+    return res.status(403).json({ message: "Invalid token" });
+  }
 
   next();
 };

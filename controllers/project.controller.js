@@ -1,5 +1,4 @@
 import Project from "../models/project.model.js";
-import Activity from "../models/activity.model.js";
 
 export const getProjects = async (req, res) => {
   const { user } = req;
@@ -14,19 +13,22 @@ export const getProjects = async (req, res) => {
 };
 
 export const getProject = async (req, res) => {
-  const { user } = req.body;
-  const { id_project } = req.params;
-  console.log(user);
+  const { user: { _id: userId }, params: { id_project } } = req;
   try {
     const projectsFound = await Project.findOne({
-      user: user._id,
+      user: userId,
       _id: id_project,
     });
+    if (!projectsFound) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
     res.json(projectsFound);
   } catch (error) {
-    res.json({ error });
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while retrieving the project' });
   }
 };
+
 
 export const createProject = async (req, res) => {
   const { user } = req;
